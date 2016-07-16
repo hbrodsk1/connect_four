@@ -28,6 +28,13 @@ describe Cell do
 				expect(cell.value).to eq("Red")
 			end
 		end
+
+		context "after hash has been created" do
+			it "has a defauly value of false" do
+				poo = Cell.class_variable_get(:@@pieces_info)
+				expect(poo[4]).to eq(false)
+			end
+		end
 	end
 end
 
@@ -62,6 +69,47 @@ describe Piece do
 		end
 	end
 end
+
+describe Game do
+	let(:game) { Game.new("Harry", "Nick")}
+	describe "#new" do
+		context "at beginning of game" do
+			it "sets player 1" do
+				expect(game.instance_variable_get(:@player_1)).to eq(game.player_1)
+			end
+		end
+
+		context "at beginning of game" do
+			it "sets player 2" do
+				expect(game.instance_variable_get(:@player_2)).to eq(game.player_2)
+			end
+		end
+
+		context "at beginning of game" do
+			it "sets up game board" do
+				expect(game.instance_variable_get(:@board)).to eq(game.board)
+			end
+		end
+	end
+
+	describe "#go" do
+		context "before each player's turn" do
+			it "returns prompt for correct player" do
+				expect(game.go("Harry")).to eq("Please choose a number 1-49 to choose your space, Harry")
+			end
+		end
+	end
+
+	describe "#get_input" do
+		context "during each player's turn" do
+			it "gets input from current player" do
+				allow(STDIN).to receive(:gets).and_return([1][2])
+				expect(game.get_input("Harry")).to eq([1][2])
+			end
+		end
+	end
+end	
+
 
 
 
