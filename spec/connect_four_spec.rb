@@ -2,11 +2,13 @@ require "connect_four"
 
 describe Board do
 	let(:board) { Board.new }
+
 	describe "#new" do
-		context "create a new board" do
-			it "has a 7x7 grid" do
-				expect(board.board[0].size).to eq(7)
-				expect(board.board.size).to eq(7)
+		context "after hash has been created" do
+			it "has a defauly value of *" do
+				allow(board).to receive(:new).and_return(board)
+				@board = board.instance_variable_get(:@board)
+				expect(@board).to include("a4" => "*   ")
 			end
 		end
 	end
@@ -26,13 +28,6 @@ describe Cell do
 			it "returns correct value" do
 				cell = Cell.new("Red")
 				expect(cell.value).to eq("Red")
-			end
-		end
-
-		context "after hash has been created" do
-			it "has a defauly value of false" do
-				poo = Cell.class_variable_get(:@@pieces_info)
-				expect(poo[4]).to eq(false)
 			end
 		end
 	end
@@ -95,7 +90,7 @@ describe Game do
 	describe "#go" do
 		context "before each player's turn" do
 			it "returns prompt for correct player" do
-				expect(game.go("Harry")).to eq("Please choose a number 1-49 to choose your space, Harry")
+				expect(game.go("Harry")).to eq("Please choose a sequence a1 - g7 to choose your space, Harry")
 			end
 		end
 	end
@@ -103,12 +98,68 @@ describe Game do
 	describe "#get_input" do
 		context "during each player's turn" do
 			it "gets input from current player" do
-				allow(STDIN).to receive(:gets).and_return([1][2])
-				expect(game.get_input("Harry")).to eq([1][2])
+				allow(STDIN).to receive(:gets).and_return("a3")
+				expect(game.get_input("Harry")).to eq("a3")
 			end
 		end
 	end
-end	
+
+	describe "#validate?" do
+		context "player input is valid" do
+			it "returns true" do
+				game.instance_variable_set(:@player_input, "a3")
+				expect(game.validate?).to eq(true)
+			end
+		end
+
+		context "player input is not valid" do
+			it "returns false" do
+				game.instance_variable_set(:@player_input, "50")
+				expect(game.validate?).to eq(false)
+			end
+		end
+
+		context "player input is 0" do
+			it "returns false" do
+				game.instance_variable_set(:@player_input, "h0")
+				expect(game.validate?).to eq(false)
+			end
+		end
+	end
+
+	describe "#update_board" do
+		context "after valid input selection" do
+			it "updates hash value for player 1" do
+				@player_1 = game.instance_variable_get(:@player_1)
+				game.instance_variable_set(:@player_input, "g7")
+				game.update_board(@player_1)
+				expect(game.board).to include("g7" => Piece.new("Red").color[0].concat("   "))
+			end
+		end
+
+		context "after valid input selection" do
+			it "updates hash value for player 2" do
+				@player_2 = game.instance_variable_get(:@player_2)
+				game.instance_variable_set(:@player_input, "b7")
+				game.update_board(@player_2)
+				expect(game.board).to include("b7" => Piece.new("Blue").color[0].concat("   "))
+			end
+		end
+	end
+
+	describe "#current_player" do
+		context "switch curent player" do
+			it "returns the correct player instnce variable" do
+				@player_1 = game.instance_variable_get(:@player_1)
+				@player_2 = game.instance_variable_get(:@player_2)
+				expect(game.instance_variable_get(:@current_player)).to eq(nil)
+				game.current_player(@player_1)
+				expect(game.instance_variable_get(:@current_player)).to eq(@player_2)
+			end
+		end
+	end
+
+end
 
 
 
