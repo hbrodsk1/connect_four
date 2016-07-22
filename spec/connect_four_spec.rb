@@ -14,25 +14,6 @@ describe Board do
 	end
 end
 
-
-describe Cell do
-	let(:cell) { Cell.new }
-	describe "#new" do
-		context "create new cell with no value" do
-			it "returns blank default value" do
-				expect(cell.value).to eq("")
-			end
-		end
-
-		context "create cell with value" do
-			it "returns correct value" do
-				cell = Cell.new("Red")
-				expect(cell.value).to eq("Red")
-			end
-		end
-	end
-end
-
 describe Player do
 	let(:player) { Player.new("Harry") }
 	describe "#new" do
@@ -83,28 +64,6 @@ describe Game do
 		context "at beginning of game" do
 			it "sets up game board" do
 				expect(game.instance_variable_get(:@board)).to eq(game.board)
-			end
-		end
-	end
-
-	describe "#go" do
-		context "before each player's turn" do
-			it "returns prompt for correct player" do
-				@current_player = game.instance_variable_get(:@current_player)
-				expect { game.go }.to output("Please choose a sequence a1 - g7 to choose your space, #{@current_player}\n").to_stdout
-				#expect(game).to receive(:get_input)
-				#game.go
-			end
-		end
-	end
-
-	describe "#get_input" do
-		context "during each player's turn" do
-			it "gets input from current player" do
-				#@player_input = "a3"
-				#allow(STDIN).to receive(:gets).and_return(@player_input)
-				allow(game).to receive(:get_input).and_return("a3")
-				expect(game.instance_variable_get(:@player_input)).to eq("a3")
 			end
 		end
 	end
@@ -167,6 +126,63 @@ describe Game do
 		end
 	end
 
+	describe "#horizontal_win?" do
+		context "player has a horizontal win" do
+			it "returns true" do
+				game.instance_variable_set(:@board, {"d1" => "B   ", "d2" => "B   ", "d3" => "B   ", "d4" => "B   "} )
+				expect(game.horizontal_win?).to eq(true)
+			end
+		end
+
+		context "player does not have a horizontal win" do
+			it "returns false" do
+				game.instance_variable_set(:@board, {"a2" => "R   ", "a4" => "R   ", "a5" => "R   ", "a6" => "R   "} )
+				expect(game.horizontal_win?).to eq(false)
+			end
+		end
+	end
+
+	describe "#vertical_win?" do
+		context "player has a vertical win" do
+			it "returns true" do
+				game.instance_variable_set(:@board, {"b4" => "R   ", "c4" => "R   ", "d4" => "R   ", "e4" => "R   "} )
+				expect(game.vertical_win?).to eq(true)
+			end
+		end
+
+		context "player does not have a vertical win" do
+			it "returns false" do
+				game.instance_variable_set(:@board, {"a4" => "B   ", "c4" => "B   ", "d4" => "B   ", "e4" => "B   "} )
+				expect(game.vertical_win?).to eq(false)
+			end
+		end
+	end
+
+	describe "#diagonal_win?" do
+		context "player has a diagonal win" do
+			it "returns true" do
+				game.instance_variable_set(:@board, {"a4" => "R   ", "b5" => "R   ", "c6" => "R   ", "d7" => "R   "} )
+				expect(game.diagonal_win?).to eq(true)
+			end
+		end
+
+		context "player does not have a diagonal win" do
+			it "returns false" do
+				game.instance_variable_set(:@board, {"a5" => "R   ", "b5" => "R   ", "c6" => "R   ", "d7" => "R   "} )
+				expect(game.diagonal_win?).to eq(false)
+			end
+		end
+	end
+
+	describe "#non_valid_input" do
+		context "input is previously chosen space" do
+			it "puts proper message" do
+				game.instance_variable_set(:@board, {"a4" => "R   "} )
+				@player_input = game.instance_variable_set(:@player_input, "a3")
+				expect { game.non_valid_input(2) }.to output("That space has already been chosen\n").to_stdout
+			end
+		end
+	end
 end
 
 

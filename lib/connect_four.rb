@@ -22,14 +22,6 @@ class Board
 	end
 end
 
-class Cell
-	attr_reader :value
-
-	def initialize(value = "")
-		@value = value
-	end
-end
-
 class Player
 	attr_reader :name
 
@@ -72,11 +64,23 @@ class Game
 	def get_input
 		@player_input = STDIN.gets.gsub("\n","")
 
-		game_progression
+		if validate?
+			game_progression
+		else
+			display_board
+			non_valid_input(1)
+			go
+		end
+	end
+
+	def check_for_empty_space?
+		return true if @board[@player_input] == "*   "
+
+		false
 	end
 
 	def game_progression
-		if validate?
+		if check_for_empty_space? && Piece.count < 41
 			update_board
 			display_board
 				if horizontal_win? == false && vertical_win? == false && diagonal_win? == false
@@ -86,9 +90,18 @@ class Game
 					puts "You Win #{@current_player}"
 					new_game
 				end
+		elsif check_for_empty_space? && Piece.count == 41
+			update_board
+			display_board
+				if horizontal_win? == false && vertical_win? == false && diagonal_win? == false
+					tie_game
+				else
+					puts "You Win #{@current_player}"
+					new_game
+				end
 		else
 			display_board
-			#error message
+			non_valid_input(2)
 			go	
 		end
 	end
@@ -97,6 +110,14 @@ class Game
 		return true if @player_input.match( /\A[a-f][1-7]\z/ )
 
     	false
+	end
+
+	def non_valid_input(message_number)
+		if message_number == 1
+			puts "Sorry, but #{@player_input} is not a valid input..."
+		elsif message_number == 2
+			puts "That space has already been chosen"
+		end	
 	end
 
 	def update_board
@@ -131,37 +152,6 @@ class Game
 		end
 	end
 
-	def win?
-		horizontal_win?
-		sorted_board = @board.keys.sort
-		sorted_board.select do |key|
-			@board[key] == ("R   ")
-		end
-		false
-=begin
-		if counter == 4
-			return true
-		else
-			sorted_board
-			#counter
-		end
-=end
-=begin
-		diag = []
-		("a".."f").each do |let|
-			1.upto(6) do |num|
-				sorted_board.each do |foo|
-					if foo[0] == let && foo[1] == num.to_s
-						diag << foo[0].next.to_s.concat(foo[1].next)
-					end
-				end
-			end
-		end
-		p diag
-		p diag.uniq.select { |x| x.size >= 4 }
-=end
-	end
-
 	def horizontal_win?
 		horizontal_game_board_rows_by_key = []
 		zip = []
@@ -179,7 +169,9 @@ class Game
 
 		zip.each do |win_combo|
 				if win_combo.all? { |key| @board[key] == ("R   ") }
-					return true	
+					return true
+				elsif win_combo.all? { |key| @board[key] == ("B   ") }
+					return true			
 				end
 			end
 		return false
@@ -199,7 +191,7 @@ class Game
 				end
 			end
 		end
-		vertical_coverage = pert.each_slice(7) { |a| vertical_game_board_rows_by_key << a}
+		pert.each_slice(6) { |a| vertical_game_board_rows_by_key << a}
 		
 		vertical_game_board_rows_by_key.each do |row|
 			 row.combination(4).to_a.each do |key|
@@ -211,7 +203,9 @@ class Game
 
 		wins.each do |win_combo|
 				if win_combo.all? { |key| @board[key] == ("R   ") }
-					return true	
+					return true
+				elsif win_combo.all? { |key| @board[key] == ("B   ") }
+					return true		
 				end
 			end
 		return false
@@ -245,20 +239,41 @@ class Game
 
 		diagonal_wins.each do |win_combo|
 				if win_combo.all? { |key| @board[key] == ("R   ") }
-					return true	
+					return true
+				elsif win_combo.all? { |key| @board[key] == ("B   ") }
+					return true
 				end
 			end
 		return false		
 	end
 
-	def new_game
+	def tie_game
+		puts "Well played! The game was a tie"
 
+		new_game
+	end
+
+	def new_game
+		puts "Would you like to play again? (Y/N)"
+
+		player_resonse = gets.upcase.chomp
+		make_new_game(player_resonse)
+	end
+
+	def make_new_game(player_resonse)
+		if player_resonse == "Y"
+			new_game = Game.new(@player_1.name, @player_2.name)
+			new_game.go
+		elsif player_resonse == "N"
+			exit
+		else
+			puts "Please select 'Y/N'"
+			new_game
+		end
 	end
 end
 
-x = Game.new("Harry", "Nick") ; x.go
-#x = Game.new("Harry", "Nick") ; p x.go ; x.get_input(@player_1) ; p x.update_board("Harry") ; x.display_board ; p x.win? ; p x.current_player ; p x.go ; x.get_input(@player_2) ; p x.update_board("Nick") ; x.display_board ;  x.win?
-#z = Game.new("Harry", "Nick") ; p z.board ; p z.player_input ; z.get_input("Harry") ; p z.player_input ; p z.update_board ; z.display_board
+x = Game.new("Harry", "Alison") ; x.go
 
 
 
